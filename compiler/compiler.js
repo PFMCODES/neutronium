@@ -1,0 +1,107 @@
+const babel = require('@babel/core');
+const path = require('path');
+const fs = require('fs');
+const { baseHtml } = require('./template');
+const { log, writeFile, ensureDir } = require('./utils');
+const chokidar = require('chokidar');
+const http = require('http');
+const { default: Mime } = require('mime');
+const WebSocket = require('ws');
+const { default: open } = require('open');
+
+function compileProject(projectDir = process.cwd()) {
+  const appJsPath = path.join(projectDir, 'App.js');
+  const distDir = path.join(projectDir, 'dist');
+  const outHtmlPath = path.join(distDir, 'index.html');
+  const outJsPath = path.join(distDir, 'App.compiled.js');
+
+  // Use relative path to Neutronium source
+  const neutroniumPath = path.relative(distDir, path.join(projectDir, 'node_modules/neutronium/src/index.js')).replace(/\\/g, '/');
+
+  try {
+    log('📖 Reading App.js...');
+    const sourceCode = fs.readFileSync(appJsPath, 'utf-8');
+
+    log('⚙️ Compiling JSX with Babel...');
+    const { code: transpiled } = babel.transformSync(sourceCode, {
+      filename: 'App.js',
+      presets: [['@babel/preset-env', { targets: { esmodules: true } }]],
+      plugins: [['@babel/plugin-transform-react-jsx', { pragma: 'h' }]],
+    });
+
+    log('📦 Writing App.compiled.js...');
+    const finalJsCode = `
+import { h, createApp } from '${neutroniumPath}';
+
+${transpiled}
+
+createApp(App).mount('#app');
+`.trim();
+
+    ensureDir(distDir);
+    writeFile(outJsPath, finalJsCode);
+
+    log('🛠️ Generating index.html...');
+    const finalHtml = baseHtml(`<div id="app"></div>`, 'App.compiled.js');
+    writeFile(outHtmlPath, finalHtml);
+
+    log('✅ Compilation complete!');
+    log(`➡️ Output: ${outHtmlPath}`);
+  } catch (e) {
+    console.error('❌ Compilation failed:', e.message);
+  }
+}
+
+function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
+  const appJsPath = path.join(projectDir, 'App.js');
+
+  const server = serveProject(projectDir, port);
+  compileProject(projectDir);
+
+  log('👀 Watching App.js for changes...');
+  chokidar.watch(appJsPath).on('change', () => {
+    console.clear();
+    log('🔁 Detected change in App.js...');
+    compileProject(projectDir);
+    if (server.broadcastReload) {
+      server.broadcastReload();
+    }
+  });
+}
+
+function serveProject(projectDir = process.cwd(), port = 3000) {
+  const distDir = path.join(projectDir, 'dist');
+
+  const server = http.createServer((req, res) => {
+    let reqPath = req.url === '/' ? '/index.html' : req.url;
+    const filePath = path.join(distDir, reqPath);
+
+    if (!fs.existsSync(filePath)) {
+      res.writeHead(404);
+      return res.end('404 Not Found');
+    }
+
+    const content = fs.readFileSync(filePath);
+    res.writeHead(200, { 'Content-Type': Mime.getType(filePath) });
+    res.end(content);
+  });
+
+  const wss = new WebSocket.Server({ server });
+
+  server.broadcastReload = () => {
+    wss.clients.forEach(client => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send('reload');
+      }
+    });
+  };
+
+  server.listen(port, () => {
+    log(`🚀 Server running at http://localhost:${port}`);
+    open(`http://localhost:${port}`);
+  });
+
+  return server;
+}
+
+module.exports = { compileProject, compileProjectWatch };

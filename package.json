@@ -1,0 +1,44 @@
+{
+  "name": "neutronium",
+  "version": "1.5.0",
+  "description": "A dense, efficient JavaScript framework for building modern web applications",
+  "main": "src/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node test/App.js"
+  },
+  "export": {
+    ".": "src/index.js"
+  },
+  "bin": {
+    "neu-cli": "./cli/index.js",
+    "neu": "src/index.js"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "keywords": [
+    "framework",
+    "javascript",
+    "frontend",
+    "ui",
+    "components"
+  ],
+  "author": "PFMCODES",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "inquirer": "^12.7.0",
+    "jsdom": "^26.1.0",
+    "mime": "^4.0.7",
+    "open": "^10.1.2",
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.28.0",
+    "@babel/core": "^7.28.0",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1"
+  }
+}
