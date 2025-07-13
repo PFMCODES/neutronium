@@ -57,6 +57,23 @@ _neutronium.createApp(App).mount('#app');
   }
 }
 
+function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
+  const appJsPath = path.join(projectDir, 'App.js');
+
+  const server = serveProject(projectDir, port);
+  compileProject(projectDir);
+
+  log('👀 Watching App.js for changes...');
+  chokidar.watch(appJsPath).on('change', () => {
+    console.clear();
+    log('🔁 Detected change in App.js...');
+    compileProject(projectDir);
+    if (server.broadcastReload) {
+      server.broadcastReload();
+    }
+  });
+}
+
 function serveProject(projectDir = process.cwd(), port = 3000) {
   const distDir = path.join(projectDir, 'dist');
 
