@@ -6,84 +6,16 @@ Neutronium is a lightweight, efficient JavaScript framework designed for buildin
 
 ## Features
 
-- 🚀 **Ultra-fast** - Optimized for performance
-- 📦 **Minimal bundle size** - Dense with features, light on complexity
-- 🎯 **Simple API** - Easy to learn and use
-- 🔧 **Flexible** - Adaptable to your project needs
-- 🌟 **Modern** - Built with current JavaScript standards
+* 🚀 **Ultra-fast** - Optimized for performance
+* 📦 **Minimal bundle size** - Dense with features, light on complexity
+* 🎯 **Simple API** - Easy to learn and use
+* 🔧 **Flexible** - Adaptable to your project needs
+* 🌟 **Modern** - Built with current JavaScript standards
 
-## Installation
+## Installation and Setup
 
 ```bash
-npm install neutronium
-```
-
-## Quick Start
-
-```javascript
-import { createComponent, render } from 'neutronium';
-
-// Create a simple component
-const HelloWorld = createComponent({
-  template: '<h1>Hello, {{name}}!</h1>',
-  props: { name: 'World' }
-});
-
-// Render to DOM
-render(HelloWorld, document.getElementById('app'));
-```
-
-## API Reference
-
-### `createComponent(options)`
-
-Creates a new component with the specified options.
-
-**Parameters:**
-- `options` (Object): Component configuration
-  - `template` (String): HTML template
-  - `props` (Object): Component properties
-  - `methods` (Object): Component methods
-
-**Returns:** Component instance
-
-### `render(component, target)`
-
-Renders a component to the specified DOM element.
-
-**Parameters:**
-- `component`: Component instance
-- `target`: DOM element to render into
-
-## Examples
-
-### Basic Component
-
-```javascript
-import { createComponent, render } from 'neutronium';
-
-const Counter = createComponent({
-  template: `
-    <div>
-      <h2>Count: {{count}}</h2>
-      <button onclick="increment()">+</button>
-      <button onclick="decrement()">-</button>
-    </div>
-  `,
-  props: {
-    count: 0
-  },
-  methods: {
-    increment() {
-      this.props.count++;
-    },
-    decrement() {
-      this.props.count--;
-    }
-  }
-});
-
-render(Counter, document.getElementById('app'));
+npm i neutronium -g && npm i neutronium && neu-cli create-app && neu-cli start --watch
 ```
 
 ### Component with State
@@ -122,10 +54,10 @@ render(TodoList, document.getElementById('app'));
 
 ## Browser Support
 
-- Chrome 60+
-- Firefox 60+
-- Safari 12+
-- Edge 79+
+* Chrome 60+
+* Firefox 60+
+* Safari 12+
+* Edge 79+
 
 ## Development
 
@@ -145,7 +77,7 @@ npm run build
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+We welcome contributions!
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -157,21 +89,12 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Roadmap
-
-- [ ] Server-side rendering support
-- [ ] TypeScript definitions
-- [ ] Developer tools integration
-- [ ] Plugin system
-- [ ] Performance optimizations
-- [ ] Advanced component lifecycle methods
-
 ## Why Neutronium?
 
 Just like neutronium is the densest stable matter in the universe, Neutronium framework packs maximum functionality into minimal code. It's designed for developers who want powerful features without the bloat.
 
 ---
 
-**Built with ⚛️ by [Your Name]**
+**Built with ※ by PFMCODES Org.**
 
 *"Dense with features, light on complexity"*
