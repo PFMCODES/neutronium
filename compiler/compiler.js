@@ -14,8 +14,6 @@ function compileProject(projectDir = process.cwd()) {
   const distDir = path.join(projectDir, 'dist');
   const outHtmlPath = path.join(distDir, 'index.html');
   const outJsPath = path.join(distDir, 'App.compiled.js');
-
-  // Use direct path to neutronium module
   const neutroniumPath = '../node_modules/neutronium/src/index.js';
 
   try {
@@ -26,15 +24,18 @@ function compileProject(projectDir = process.cwd()) {
     const { code: transpiled } = babel.transformSync(sourceCode, {
       filename: 'App.js',
       presets: [['@babel/preset-env', { targets: { esmodules: true } }]],
-      plugins: [['@babel/plugin-transform-react-jsx', { pragma: 'h' }]],
+      plugins: [['@babel/plugin-transform-react-jsx', { pragma: '_neutronium.h' }]],
     });
 
     const finalJsCode = `
-import { h, createApp } from '${neutroniumPath}';
+import * as _neutronium from '${neutroniumPath}';
+
+"use strict";
 
 ${transpiled}
 
-createApp(App).mount('#app');
+(0, _neutronium.createApp)(App).mount('#app');
+_neutronium.createApp(App).mount('#app');
 `.trim();
 
     ensureDir(distDir);
