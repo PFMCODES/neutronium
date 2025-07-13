@@ -63,7 +63,7 @@ render(TodoList, document.getElementById('app'));
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/neutronium.git
+git clone https://github.com/PFMCODES/neutronium.git
 
 # Install dependencies
 npm install
