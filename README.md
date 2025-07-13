@@ -1,4 +1,4 @@
-# Neutronium
+<div style="display: flex; align-items: center; gap: 5px"><img src="./neutronium.png" style="width: 25px; margin-bottom: 20px"><h1>Neutronium</h1></div>
 
 > Ultra-dense JavaScript framework - maximum performance, minimal overhead
 
@@ -94,7 +94,4 @@ MIT License - see the [LICENSE](LICENSE) file for details.
 Just like neutronium is the densest stable matter in the universe, Neutronium framework packs maximum functionality into minimal code. It's designed for developers who want powerful features without the bloat.
 
 ---
-
-**Built with ※ by PFMCODES Org.**
-
-*"Dense with features, light on complexity"*
+<div style="display: flex; align-items: center; gap: 5px; font-weight: bolder"><h2>Built with</h2><img src="./neutronium.png" style="width: 25px"><h2> by PFMCODES </h2></div>
