@@ -70,7 +70,7 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
 }
 
 function serveProject(projectDir = process.cwd(), port = 3000) {
-  const distDir = path.join(projectDir, 'dist');
+  const distDir = projectDir
 
   const server = http.createServer((req, res) => {
     let reqPath = req.url === '/' ? '/index.html' : req.url;
