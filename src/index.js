@@ -4,7 +4,10 @@ function h(type, props = {}, ...children) {
   const el = document.createElement(type);
 
   for (const [key, value] of Object.entries(props || {})) {
-    if (key.startsWith('on') && typeof value === 'function') {
+    if (key === 'ref' && typeof value === 'function') {
+      // Delay to ensure element is mounted
+      setTimeout(() => value(el), 0);
+    } else if (key.startsWith('on') && typeof value === 'function') {
       el.addEventListener(key.slice(2).toLowerCase(), value);
     } else {
       el.setAttribute(key, value);
@@ -37,6 +40,5 @@ function createApp(component) {
     }
   };
 }
-
 
 export { h, createApp };

@@ -23,8 +23,12 @@ function compileProject(projectDir = process.cwd()) {
     log('⚙️ Compiling JSX with Babel...');
     let { code: transpiled } = babel.transformSync(sourceCode, {
       filename: 'App.js',
-      presets: [['@babel/preset-env', { targets: { esmodules: true } }]],
-      plugins: [['@babel/plugin-transform-react-jsx', { pragma: '_neutronium.h' }]],
+      presets: [],
+      plugins: [
+        ['@babel/plugin-transform-react-jsx', { pragma: '_neutronium.h' }]
+      ],
+      babelrc: false,
+      configFile: false,
     });
 
     // Remove CommonJS require if present
@@ -32,6 +36,7 @@ function compileProject(projectDir = process.cwd()) {
       /(const|var|let)\s+_neutronium\s*=\s*require\(["']neutronium["']\);?/g,
       ''
     );
+    transpiled = transpiled.replace("import { createApp } from 'neutronium';", "import { createApp } from '../node_modules/neutronium/src/index.js';")
 
     const finalJsCode = `
 import * as _neutronium from '${neutroniumPath}';
