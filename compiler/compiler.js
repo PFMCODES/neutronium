@@ -22,14 +22,19 @@ function compileProject(projectDir = process.cwd()) {
 
     log('⚙️ Compiling JSX with Babel...');
     let { code: transpiled } = babel.transformSync(sourceCode, {
-      filename: 'App.js',
-      presets: [],
-      plugins: [
-        ['@babel/plugin-transform-react-jsx', { pragma: '_neutronium.h' }]
-      ],
-      babelrc: false,
-      configFile: false,
-    });
+  filename: 'App.js', // or use path.basename(appJsPath)
+  babelrc: false,
+  configFile: false,
+  presets: [],
+  plugins: [
+  ['@babel/plugin-transform-react-jsx', {
+    pragma: '_neutronium.h',
+    pragmaFrag: '_neutronium.Fragment',
+    runtime: 'classic',
+    useBuiltIns: false // <- IMPORTANT
+  }]
+]
+});
 
     // Remove CommonJS require if present
     transpiled = transpiled.replace(
