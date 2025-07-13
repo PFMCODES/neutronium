@@ -15,8 +15,8 @@ function compileProject(projectDir = process.cwd()) {
   const outHtmlPath = path.join(distDir, 'index.html');
   const outJsPath = path.join(distDir, 'App.compiled.js');
 
-  // Use relative path to Neutronium source
-  const neutroniumPath = path.relative(distDir, path.join(projectDir, 'node_modules/neutronium/src/index.js')).replace(/\\/g, '/');
+  // Use direct path to neutronium module
+  const neutroniumPath = '../node_modules/neutronium/src/index.js';
 
   try {
     log('📖 Reading App.js...');
@@ -29,7 +29,6 @@ function compileProject(projectDir = process.cwd()) {
       plugins: [['@babel/plugin-transform-react-jsx', { pragma: 'h' }]],
     });
 
-    log('📦 Writing App.compiled.js...');
     const finalJsCode = `
 import { h, createApp } from '${neutroniumPath}';
 
@@ -70,11 +69,17 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
 }
 
 function serveProject(projectDir = process.cwd(), port = 3000) {
-  const distDir = projectDir
+  const distDir = path.join(projectDir, 'dist');
 
   const server = http.createServer((req, res) => {
-    let reqPath = req.url === '/' ? '/index.html' : req.url;
-    const filePath = path.join(distDir, reqPath);
+    let reqPath = req.url;
+
+    // Redirect "/" to "dist/index.html"
+    if (reqPath === '/' || reqPath === '/index.html') {
+      reqPath = '/dist/index.html';
+    }
+
+    const filePath = path.join(projectDir, reqPath);
 
     if (!fs.existsSync(filePath)) {
       res.writeHead(404);
