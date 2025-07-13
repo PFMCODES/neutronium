@@ -27,7 +27,7 @@ function compileProject(projectDir = process.cwd()) {
       plugins: [['@babel/plugin-transform-react-jsx', { pragma: '_neutronium.h' }]],
     });
 
-    transipiled.replace('var _neutronium = require("neutronium");', '')
+    transpiled = transpiled.replace(/(const|var|let)\s+_neutronium\s*=\s*require\(["']neutronium["']\);?/g, '');
 
     const finalJsCode = `
 import * as _neutronium from '${neutroniumPath}';
