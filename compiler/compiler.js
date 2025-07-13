@@ -21,13 +21,17 @@ function compileProject(projectDir = process.cwd()) {
     const sourceCode = fs.readFileSync(appJsPath, 'utf-8');
 
     log('⚙️ Compiling JSX with Babel...');
-    const { code: transpiled } = babel.transformSync(sourceCode, {
+    let { code: transpiled } = babel.transformSync(sourceCode, {
       filename: 'App.js',
       presets: [['@babel/preset-env', { targets: { esmodules: true } }]],
       plugins: [['@babel/plugin-transform-react-jsx', { pragma: '_neutronium.h' }]],
     });
 
-    transpiled = transpiled.replace(/(const|var|let)\s+_neutronium\s*=\s*require\(["']neutronium["']\);?/g, '');
+    // Remove CommonJS require if present
+    transpiled = transpiled.replace(
+      /(const|var|let)\s+_neutronium\s*=\s*require\(["']neutronium["']\);?/g,
+      ''
+    );
 
     const finalJsCode = `
 import * as _neutronium from '${neutroniumPath}';
@@ -36,7 +40,6 @@ import * as _neutronium from '${neutroniumPath}';
 
 ${transpiled}
 
-(0, _neutronium.createApp)(App).mount('#app');
 _neutronium.createApp(App).mount('#app');
 `.trim();
 
@@ -52,23 +55,6 @@ _neutronium.createApp(App).mount('#app');
   } catch (e) {
     console.error('❌ Compilation failed:', e.message);
   }
-}
-
-function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
-  const appJsPath = path.join(projectDir, 'App.js');
-
-  const server = serveProject(projectDir, port);
-  compileProject(projectDir);
-
-  log('👀 Watching App.js for changes...');
-  chokidar.watch(appJsPath).on('change', () => {
-    console.clear();
-    log('🔁 Detected change in App.js...');
-    compileProject(projectDir);
-    if (server.broadcastReload) {
-      server.broadcastReload();
-    }
-  });
 }
 
 function serveProject(projectDir = process.cwd(), port = 3000) {
@@ -106,7 +92,7 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
 
   server.listen(port, () => {
     log(`🚀 Server running at http://localhost:${port}`);
-    open(`http://localhost:${port}`);
+    open(`http://localhost:${port}/dist/index.html`);
   });
 
   return server;
