@@ -44,7 +44,7 @@ function compileProject(projectDir = process.cwd()) {
       /(const|var|let)\s+_neutronium\s*=\s*require\(["']neutronium["']\);?/g,
       ''
     );
-    transpiled = transpiled.replace("import { createApp } from 'neutronium';", "import { createApp } from '../node_modules/neutronium/src/index.js';")
+    transpiled = transpiled.replace("from 'neutronium';", "from '../node_modules/neutronium/src/index.js';")
 
     const finalJsCode = `
 import * as _neutronium from '${neutroniumPath}';
