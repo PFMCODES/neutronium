@@ -31,7 +31,10 @@ function compileProject(projectDir = process.cwd()) {
     pragma: '_neutronium.h',
     pragmaFrag: '_neutronium.Fragment',
     runtime: 'classic',
-    useBuiltIns: false // <- IMPORTANT
+    useBuiltIns: false, // <- IMPORTANT
+    sourceMaps: true,
+    comments: false,
+    minified: true,
   }]
 ]
 });
