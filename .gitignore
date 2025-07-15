@@ -23,3 +23,5 @@ TestResults.xml
 
 node_modules
 .babelrc
+.npmignore
+ts-neutronium

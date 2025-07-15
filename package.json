@@ -1,20 +1,19 @@
 {
   "name": "neutronium",
-  "version": "2.5.3",
+  "version": "2.8.5",
   "description": "A dense, efficient JavaScript framework for building modern web applications",
   "main": "src/index.js",
   "type": "commonjs",
+  "types": "./@types/neutronium/index.d.ts",
   "scripts": {
-  },
-  "export": {
-    ".": "src/index.js"
-  },
-  "bin": {
-    "neu-cli": "./cli/index.js",
-    "neu": "src/index.js"
+    "build": "node build.js",
+    "start": "npx serve dist"
   },
   "exports": {
     ".": "./src/index.js"
+  },
+  "bin": {
+    "neu-cli": "./cli/index.js"
   },
   "keywords": [
     "framework",
@@ -26,16 +25,23 @@
   "author": "PFMCODES",
   "license": "MIT",
   "dependencies": {
+    "@babel/cli": "^7.28.0",
+    "@babel/core": "^7.28.0",
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@babel/preset-env": "^7.28.0",
+    "@babel/preset-react": "^7.27.1",
     "chokidar": "^4.0.3",
     "inquirer": "^12.7.0",
     "jsdom": "^26.1.0",
     "mime": "^4.0.7",
     "open": "^10.1.2",
-    "ws": "^8.18.3",
-    "@babel/cli": "^7.28.0",
-    "@babel/core": "^7.28.0",
-    "@babel/plugin-transform-react-jsx": "^7.27.1",
-    "@babel/preset-env": "^7.28.0",
-    "@babel/preset-react": "^7.27.1"
+    "ws": "^8.18.3"
+  },
+  "devDependencies": {
+    "@rollup/plugin-babel": "^6.0.4",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "esbuild": "^0.25.6",
+    "rollup": "^2.79.2",
+    "rollup-plugin-terser": "^7.0.2"
   }
 }
