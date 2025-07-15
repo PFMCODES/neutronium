@@ -36,7 +36,7 @@ npm i neutronium@latest -g
 ## 🛠️ Setup
 
 ```
-neu-cli create-app && npm i neutronium@latest -g 
+neu-cli create-app my-app
 ```
 
 ## Usage Example
@@ -61,24 +61,4 @@ createApp(App).mount('body');
 ```
 
 ## Result:
-  <iframe
-  style="width:100%; height:200px; border:1px solid #ccc;"
-  srcdoc='
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <style>
-          body {
-            font-family: sans-serif;
-            margin: 0;
-            padding: 1em;
-          }
-        </style>
-      </head>
-      <body>
-        <h1>Welcome to Neutronium</h1>
-        <h2>Hello, yourName!</h2>
-      </body>
-    </html>
-  '>
-</iframe>
+[Results](https://raw.githubusercontent.com/PFMCODES/neutronium/main/results.png)
