@@ -30,12 +30,20 @@
 ## 📦 Installation
 
 ```bash
-npm i neutronium
+npm i neutronium@latest -g
+```
+
+## 🛠️ Setup
+
+```
+neu-cli create-app && npm i neutronium@latest -g 
 ```
 
 ## Usage Example
 ```jsx
 // App.js
+import { createApp } from 'neutronium' // or ts-neutronium for ts devs
+
 function Greeting(props) {
   return <h2>Hello, {props.name}!</h2>;
 }
@@ -44,9 +52,33 @@ export default function App() {
   return (
     <>
       <h1>Welcome to Neutronium</h1>
-      {Greeting({ name: "Krushna" })}
+      <Greeting name="yourName" />
     </>
   );
 }
+
+createApp(App).mount('body');
 ```
 
+## Result:
+  <iframe
+  style="width:100%; height:200px; border:1px solid #ccc;"
+  srcdoc='
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body {
+            font-family: sans-serif;
+            margin: 0;
+            padding: 1em;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>Welcome to Neutronium</h1>
+        <h2>Hello, yourName!</h2>
+      </body>
+    </html>
+  '>
+</iframe>
