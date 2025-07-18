@@ -1,14 +1,11 @@
 {
   "name": "neutronium",
-  "version": "2.9.7",
+  "version": "2.9.8",
   "description": "A dense, efficient JavaScript framework for building modern web applications",
   "main": "src/index.js",
   "type": "commonjs",
   "types": "./ts-neutronium/index.d.ts",
-  "scripts": {
-    "build": "node build.js",
-    "start": "npx serve dist"
-  },
+  "scripts": {},
   "exports": {
     ".": "./src/index.js"
   },

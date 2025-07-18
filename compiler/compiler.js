@@ -80,64 +80,167 @@ async function compileProject(projectDir = process.cwd()) {
     writeFile(path.join(distDir, 'index.html'), htmlContent);
 
     log('✅ Compilation complete!');
+    return true;
   } catch (e) {
     console.error('❌ Compilation failed:', e.message);
+    return false;
   }
 }
 
 function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
+  // Start server first
   const server = serveProject(projectDir, port);
+  
+  // Do initial compilation
   compileProject(projectDir);
 
   log('👀 Watching project for changes...');
+  log('✋ Press Ctrl+C to stop the development server');
+  
   let timeout;
 
-  chokidar.watch([
-    path.join(projectDir, '**/*.js'),
-    path.join(projectDir, '**/*.ts'),
-    path.join(projectDir, '**/*.tsx')
-  ], {
+  // Watch files more specifically
+  const watcher = chokidar.watch(projectDir, {
     ignoreInitial: true,
-  }).on('change', filePath => {
+    ignored: [
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/.git/**',
+      '**/*',
+      'compiler.js'
+    ],
+    persistent: true,
+    followSymlinks: false,
+    depth: 2,
+    awaitWriteFinish: {
+      stabilityThreshold: 100,
+      pollInterval: 100
+    }
+  });
+
+  watcher.on('ready', () => {
+    log('📡 File watcher ready and monitoring changes...');
+  });
+
+  watcher.on('change', filePath => {
+    // Only watch js, ts, tsx files
+    if (!/\.(js|ts|tsx)$/.test(filePath)) {
+      return;
+    }
+
+    log(`🔍 Detected change in: ${path.relative(projectDir, filePath)}`);
+    
     clearTimeout(timeout);
     timeout = setTimeout(() => {
-      console.clear();
-      log(`🔁 File changed: ${filePath}`);
       log('🔨 Rebuilding project...');
 
       try {
-        compileProject(projectDir);
-
-        if (server?.broadcastReload) {
-          server.broadcastReload();
-          log('🔃 Reload broadcasted');
+        const success = compileProject(projectDir);
+        if (success) {
+          log('✅ Rebuild successful!');
+          // Trigger browser reload
+          if (server && server.broadcastReload) {
+            server.broadcastReload();
+            log('🔄 Browser reload triggered');
+          }
         }
       } catch (err) {
         console.error('❌ Rebuild failed:', err.stack || err.message);
       }
-    }, 100); // Debounce multiple rapid file changes
+    }, 300); // Slightly longer debounce
   });
+
+  watcher.on('add', filePath => {
+    if (!/\.(js|ts|tsx)$/.test(filePath)) {
+      return;
+    }
+    log(`📝 New file added: ${path.relative(projectDir, filePath)}`);
+  });
+
+  watcher.on('unlink', filePath => {
+    if (!/\.(js|ts|tsx)$/.test(filePath)) {
+      return;
+    }
+    log(`🗑️ File removed: ${path.relative(projectDir, filePath)}`);
+  });
+
+  watcher.on('error', error => {
+    console.error('❌ Watcher error:', error);
+  });
+
+  // Cleanup function
+  const cleanup = () => {
+    log('🧹 Cleaning up...');
+    watcher.close();
+    if (server) {
+      server.close();
+    }
+    process.exit(0);
+  };
+
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+
+  return { server, watcher, cleanup };
 }
 
 function serveProject(projectDir = process.cwd(), port = 3000) {
   const server = http.createServer((req, res) => {
     let reqPath = req.url;
+    
+    // Handle root and index requests
     if (reqPath === '/' || reqPath === '/index.html') {
       reqPath = '/dist/index.html';
     }
+    
+    // Handle favicon requests
+    if (reqPath === '/favicon.ico') {
+      res.writeHead(204);
+      return res.end();
+    }
 
     const filePath = path.join(projectDir, reqPath);
+    
+    // Security check - ensure file is within project directory
+    if (!filePath.startsWith(projectDir)) {
+      res.writeHead(403);
+      return res.end('403 Forbidden');
+    }
+    
     if (!fs.existsSync(filePath)) {
       res.writeHead(404);
       return res.end('404 Not Found');
     }
 
-    const content = fs.readFileSync(filePath);
-    res.writeHead(200, { 'Content-Type': Mime.getType(filePath) });
-    res.end(content);
+    try {
+      const content = fs.readFileSync(filePath);
+      const mimeType = Mime.getType(filePath) || 'application/octet-stream';
+      
+      res.writeHead(200, { 
+        'Content-Type': mimeType,
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      });
+      res.end(content);
+    } catch (err) {
+      console.error('Error serving file:', err);
+      res.writeHead(500);
+      res.end('500 Internal Server Error');
+    }
   });
 
   const wss = new WebSocket.Server({ server });
+  
+  // Add WebSocket connection handling
+  wss.on('connection', (ws) => {
+    log('🔌 WebSocket client connected');
+    
+    ws.on('close', () => {
+      log('🔌 WebSocket client disconnected');
+    });
+  });
+
   server.broadcastReload = () => {
     wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
@@ -148,10 +251,13 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
 
   server.listen(port, () => {
     log(`🚀 Server running at http://localhost:${port}`);
-    open(`http://localhost:${port}/dist/index.html`);
+    log(`🌐 Open your browser and navigate to: http://localhost:${port}`);
+    
+    // Remove the open() call completely for now to avoid hanging
+    // User can manually open browser
   });
 
   return server;
 }
 
-module.exports = { compileProject, compileProjectWatch };
+module.exports = { compileProject, compileProjectWatch, serveProject };
