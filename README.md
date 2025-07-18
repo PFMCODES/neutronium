@@ -64,3 +64,6 @@ createApp(App).mount('body');
 ![Results](https://raw.githubusercontent.com/PFMCODES/neutronium/main/results.png)
 
 ## Other helpful packages you might need
+### [@neuhq/alert](https://www.npmjs.com/package/@neuhq/alert)
+## ⚒️ In dev
+### [@neuhq/router](https://www.npmjs.com/package/@neuhq/router) 
