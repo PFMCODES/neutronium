@@ -62,3 +62,5 @@ createApp(App).mount('body');
 
 ## Result:
 ![Results](https://raw.githubusercontent.com/PFMCODES/neutronium/main/results.png)
+
+## Other helpful packages you might need

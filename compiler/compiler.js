@@ -61,18 +61,22 @@ async function compileProject(projectDir = process.cwd()) {
         ]]
       });
 
+      // Ensure _neutronium is imported
       if (!source.includes('_neutronium')) {
         code = `import * as _neutronium from '${neutroniumPath}';\n\n${code}`;
       }
 
+      // Replace imports to local neutronium
       code = code.replace(/from\s+['"]neutronium['"]/g, `from '${neutroniumPath}'`);
-      code = code.replace("_neutronium.createApp(App).mount('#app');")
 
       writeFile(outputPath, code);
     }
 
     log('🛠️ Generating index.html...');
-    const htmlContent = baseHtml(``, entry);
+    const htmlContent = baseHtml(`
+      <script defer type="module" src="./${entry}"></script>
+    `, entry);
+
     writeFile(path.join(distDir, 'index.html'), htmlContent);
 
     log('✅ Compilation complete!');
@@ -91,24 +95,31 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
   chokidar.watch([
     path.join(projectDir, '**/*.js'),
     path.join(projectDir, '**/*.ts'),
-    path.join(projectDir, '**/*.tsx'),
-  ]).on('change', () => {
+    path.join(projectDir, '**/*.tsx')
+  ], {
+    ignoreInitial: true,
+  }).on('change', filePath => {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       console.clear();
-      log('🔁 File changed, rebuilding...');
+      log(`🔁 File changed: ${filePath}`);
+      log('🔨 Rebuilding project...');
+
       try {
         compileProject(projectDir);
-        if (server.broadcastReload) server.broadcastReload();
+
+        if (server?.broadcastReload) {
+          server.broadcastReload();
+          log('🔃 Reload broadcasted');
+        }
       } catch (err) {
-        console.error('❌ Rebuild failed:', err.message);
+        console.error('❌ Rebuild failed:', err.stack || err.message);
       }
-    }, 100);
+    }, 100); // Debounce multiple rapid file changes
   });
 }
 
 function serveProject(projectDir = process.cwd(), port = 3000) {
-
   const server = http.createServer((req, res) => {
     let reqPath = req.url;
     if (reqPath === '/' || reqPath === '/index.html') {

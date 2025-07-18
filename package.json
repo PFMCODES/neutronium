@@ -1,6 +1,6 @@
 {
   "name": "neutronium",
-  "version": "2.9.5",
+  "version": "2.9.7",
   "description": "A dense, efficient JavaScript framework for building modern web applications",
   "main": "src/index.js",
   "type": "commonjs",
@@ -35,7 +35,7 @@
     "inquirer": "^12.7.0",
     "jsdom": "^26.1.0",
     "mime": "^4.0.7",
-    "open": "^10.1.2",
+    "open": "^10.2.0",
     "ws": "^8.18.3"
   },
   "devDependencies": {

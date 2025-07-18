@@ -10,26 +10,22 @@ export function resetStateIndex() {
 
 // Custom useState implementation
 function useState(initialValue) {
-  const current = stateIndex;
+  const index = stateIndex;
 
-  if (globalState[current] === undefined) {
-    globalState[current] = initialValue;
+  if (globalState[index] === undefined) {
+    globalState[index] = initialValue;
   }
 
   function setState(newValue) {
-    globalState[current] = newValue;
+    globalState[index] = newValue;
 
-    // Re-render the entire app
-    if (window.__NEUTRONIUM_ROOT__ && typeof window.__NEUTRONIUM_RENDER_FN__ === 'function') {
-      window.__NEUTRONIUM_ROOT__.innerHTML = '';
-      resetStateIndex();
-      const newVNode = window.__NEUTRONIUM_RENDER_FN__();
-      window.__NEUTRONIUM_ROOT__.appendChild(newVNode);
+    if (typeof window.__NEUTRONIUM_RENDER_FN__ === 'function') {
+      window.__NEUTRONIUM_RENDER_FN__(); // triggers re-render
     }
   }
 
   stateIndex++;
-  return [globalState[current], setState];
+  return [globalState[index], setState];
 }
 
 function h(type, props = {}, ...children) {
@@ -69,19 +65,22 @@ function createApp(component) {
       const root = typeof selector === 'string' ? document.querySelector(selector) : selector;
       if (!root) {
         console.error(`❌ Root element '${selector}' not found`);
-        return null; // return something explicit
+        return null;
       }
-      // Save render function + root globally so useState can use them
+
       window.__NEUTRONIUM_ROOT__ = root;
-      window.__NEUTRONIUM_RENDER_FN__ = component;
 
-      // Reset before first render
-      resetStateIndex();
-      const vnode = component();
-      root.innerHTML = '';
-      root.appendChild(vnode);
+      function render() {
+        resetStateIndex(); // ✅ this is enough
+        const vnode = component();
+        root.innerHTML = '';
+        root.appendChild(vnode);
+      }
 
-      return vnode; // ✅ REQUIRED
+      window.__NEUTRONIUM_RENDER_FN__ = render; // save render function
+      render(); // initial render
+
+      return root;
     }
   };
 }
