@@ -1,6 +1,6 @@
 {
   "name": "neutronium",
-  "version": "2.9.9",
+  "version": "2.9.9.1",
   "description": "A dense, efficient JavaScript framework for building modern web applications",
   "main": "src/index.js",
   "type": "commonjs",
@@ -22,13 +22,13 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/pfm37/n.git"
+    "url": "git+https://github.com/pfmcodes/neutronium.git"
   },
   "author": "PFMCODES",
   "bugs": {
-    "url": "https://github.com/pfm37/n/issues"
+    "url": "https://github.com//pfmcodes/neutronium/issues"
   },
-  "homepage": "https://github.com/pfm37/n#readme",
+  "homepage": "https://github.com/pfmcodes/neutronium#readme",
   "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.28.0",
