@@ -3,42 +3,60 @@
 let globalState = [];
 let stateIndex = 0;
 
-// This will be called before rendering begins
-export function resetStateIndex() {
+function resetStateIndex() {
   stateIndex = 0;
 }
 
-// Custom useState implementation
+let currentEffect = null;
+
+function useEffect(fn) {
+  currentEffect = fn;
+  fn(); // run once to collect dependencies
+  currentEffect = null;
+}
+
 function useState(initialValue) {
   const index = stateIndex;
 
-  if (globalState[index] === undefined) {
-    globalState[index] = initialValue;
-  }
+  if (!globalState[index]) {
+    let value = initialValue;
+    const subs = new Set();
 
-  function setState(newValue) {
-    globalState[index] = newValue;
-
-    if (typeof window.__NEUTRONIUM_RENDER_FN__ === 'function') {
-      window.__NEUTRONIUM_RENDER_FN__(); // triggers re-render
+    function get() {
+      if (currentEffect) subs.add(currentEffect);
+      return value;
     }
+
+    function set(newVal) {
+      if (value !== newVal) {
+        value = newVal;
+        subs.forEach(fn => fn()); // re-run effects
+        if (typeof window.__NEUTRONIUM_RENDER_FN__ === 'function') {
+          window.__NEUTRONIUM_RENDER_FN__();
+        }
+      }
+    }
+
+    globalState[index] = [get, set];
   }
 
+  const result = globalState[index];
   stateIndex++;
-  return [globalState[index], setState];
+  return result;
 }
 
 function h(type, props = {}, ...children) {
+  props = props || {};
+  props.children = (props.children || []).concat(children).flat();
+
   if (typeof type === 'function') {
-    // 🔧 Add children to props
-    props = props || {};
-    props.children = children.flat(); // ✅ critical fix
     return type(props);
   }
 
   const el = document.createElement(type);
 
   for (const [key, value] of Object.entries(props || {})) {
+    if (key === 'children') continue; // skip
     if (key.startsWith('on') && typeof value === 'function') {
       el.addEventListener(key.slice(2).toLowerCase(), value);
     } else if (key === 'ref' && typeof value === 'function') {
@@ -48,7 +66,7 @@ function h(type, props = {}, ...children) {
     }
   }
 
-  children.flat().forEach(child => {
+  props.children.forEach(child => {
     if (typeof child === 'string' || typeof child === 'number') {
       el.appendChild(document.createTextNode(child));
     } else if (child instanceof Node) {
@@ -71,14 +89,14 @@ function createApp(component) {
       window.__NEUTRONIUM_ROOT__ = root;
 
       function render() {
-        resetStateIndex(); // ✅ this is enough
+        resetStateIndex();
         const vnode = component();
         root.innerHTML = '';
         root.appendChild(vnode);
       }
 
-      window.__NEUTRONIUM_RENDER_FN__ = render; // save render function
-      render(); // initial render
+      window.__NEUTRONIUM_RENDER_FN__ = render;
+      render();
 
       return root;
     }
@@ -100,4 +118,4 @@ function Fragment(props = {}) {
   return frag;
 }
 
-export { h, createApp, Fragment, useState };  
+export { h, createApp, Fragment, useState,useEffect, resetStateIndex };

@@ -1,7 +1,7 @@
 {
   "name": "neutronium",
-  "version": "2.9.91",
-  "description": "A dense, efficient JavaScript framework for building modern web applications",
+  "version": "3.0.0",
+  "description": "Ultra-dense JavaScript framework – maximum performance, minimal overhead",
   "main": "src/index.js",
   "type": "commonjs",
   "types": "./ts-neutronium/index.d.ts",

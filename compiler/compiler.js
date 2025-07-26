@@ -12,14 +12,19 @@ const { execSync } = require('child_process');
 
 async function compileProject(projectDir = process.cwd()) {
   const distDir = path.join(projectDir, 'dist');
-  const neutroniumPath = '../node_modules/neutronium/src/index.js';
+  const neutroniumPath = path.join(projectDir, 'node_modules', 'neutronium', 'src', 'index.js');
   const packageJson = JSON.parse(fs.readFileSync(path.join(projectDir, 'package.json')));
   const entry = packageJson.main || 'App.js';
 
   try {
     log('📁 Scanning project files...');
     const allFiles = fs.readdirSync(projectDir);
-    const jsFiles = allFiles.filter(f => f.endsWith('.js') && f !== 'compiler.js' && !f.startsWith('.'));
+    const jsFiles = allFiles.filter(f =>
+      f.endsWith('.js') &&
+      f !== 'compiler.js' &&
+      !f.startsWith('.') &&
+      !f.startsWith('dist')
+    );
 
     if (fs.existsSync(path.join(projectDir, 'tsconfig.json'))) {
       try {
@@ -63,11 +68,11 @@ async function compileProject(projectDir = process.cwd()) {
 
       // Ensure _neutronium is imported
       if (!source.includes('_neutronium')) {
-        code = `import * as _neutronium from '${neutroniumPath}';\n\n${code}`;
+        code = `import * as _neutronium from '${neutroniumPath.replace(/\\/g, '/')}';\n\n${code}`;
       }
 
-      // Replace imports to local neutronium
-      code = code.replace(/from\s+['"]neutronium['"]/g, `from '${neutroniumPath}'`);
+      // Replace imports to "neutronium" with local path
+      code = code.replace(/from\s+['"]neutronium['"]/g, `from '${neutroniumPath.replace(/\\/g, '/')}'`);
 
       writeFile(outputPath, code);
     }
@@ -88,32 +93,31 @@ async function compileProject(projectDir = process.cwd()) {
 }
 
 function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
-  // Start server first
   const server = serveProject(projectDir, port);
-  
-  // Do initial compilation
   compileProject(projectDir);
 
   log('👀 Watching project for changes...');
   log('✋ Press Ctrl+C to stop the development server');
-  
+
   let timeout;
 
-  // Watch files more specifically
-  const watcher = chokidar.watch(projectDir, {
+  const watcher = chokidar.watch([
+    path.join(projectDir, '**/*.js'),
+    path.join(projectDir, '**/*.ts'),
+    path.join(projectDir, '**/*.tsx'),
+  ], {
     ignoreInitial: true,
     ignored: [
       '**/node_modules/**',
       '**/dist/**',
       '**/.git/**',
-      '**/*',
       'compiler.js'
     ],
     persistent: true,
     followSymlinks: false,
-    depth: 2,
+    depth: 5,
     awaitWriteFinish: {
-      stabilityThreshold: 100,
+      stabilityThreshold: 300,
       pollInterval: 100
     }
   });
@@ -123,58 +127,45 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
   });
 
   watcher.on('change', filePath => {
-    // Only watch js, ts, tsx files
-    if (!/\.(js|ts|tsx)$/.test(filePath)) {
-      return;
-    }
+    if (!/\.(js|ts|tsx)$/.test(filePath)) return;
 
     log(`🔍 Detected change in: ${path.relative(projectDir, filePath)}`);
-    
+
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       log('🔨 Rebuilding project...');
-
       try {
         const success = compileProject(projectDir);
-        if (success) {
-          log('✅ Rebuild successful!');
-          // Trigger browser reload
-          if (server && server.broadcastReload) {
-            server.broadcastReload();
-            log('🔄 Browser reload triggered');
-          }
+        if (success && server.broadcastReload) {
+          server.broadcastReload();
+          log('🔄 Browser reload triggered');
         }
       } catch (err) {
         console.error('❌ Rebuild failed:', err.stack || err.message);
       }
-    }, 300); // Slightly longer debounce
+    }, 300);
   });
 
   watcher.on('add', filePath => {
-    if (!/\.(js|ts|tsx)$/.test(filePath)) {
-      return;
+    if (/\.(js|ts|tsx)$/.test(filePath)) {
+      log(`📝 New file added: ${path.relative(projectDir, filePath)}`);
     }
-    log(`📝 New file added: ${path.relative(projectDir, filePath)}`);
   });
 
   watcher.on('unlink', filePath => {
-    if (!/\.(js|ts|tsx)$/.test(filePath)) {
-      return;
+    if (/\.(js|ts|tsx)$/.test(filePath)) {
+      log(`🗑️ File removed: ${path.relative(projectDir, filePath)}`);
     }
-    log(`🗑️ File removed: ${path.relative(projectDir, filePath)}`);
   });
 
   watcher.on('error', error => {
     console.error('❌ Watcher error:', error);
   });
 
-  // Cleanup function
   const cleanup = () => {
     log('🧹 Cleaning up...');
     watcher.close();
-    if (server) {
-      server.close();
-    }
+    if (server) server.close();
     process.exit(0);
   };
 
@@ -187,26 +178,23 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
 function serveProject(projectDir = process.cwd(), port = 3000) {
   const server = http.createServer((req, res) => {
     let reqPath = req.url;
-    
-    // Handle root and index requests
+
     if (reqPath === '/' || reqPath === '/index.html') {
       reqPath = '/dist/index.html';
     }
-    
-    // Handle favicon requests
+
     if (reqPath === '/favicon.ico') {
       res.writeHead(204);
       return res.end();
     }
 
     const filePath = path.join(projectDir, reqPath);
-    
-    // Security check - ensure file is within project directory
+
     if (!filePath.startsWith(projectDir)) {
       res.writeHead(403);
       return res.end('403 Forbidden');
     }
-    
+
     if (!fs.existsSync(filePath)) {
       res.writeHead(404);
       return res.end('404 Not Found');
@@ -215,8 +203,8 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
     try {
       const content = fs.readFileSync(filePath);
       const mimeType = Mime.getType(filePath) || 'application/octet-stream';
-      
-      res.writeHead(200, { 
+
+      res.writeHead(200, {
         'Content-Type': mimeType,
         'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache',
@@ -231,14 +219,10 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
   });
 
   const wss = new WebSocket.Server({ server });
-  
-  // Add WebSocket connection handling
+
   wss.on('connection', (ws) => {
     log('🔌 WebSocket client connected');
-    
-    ws.on('close', () => {
-      log('🔌 WebSocket client disconnected');
-    });
+    ws.on('close', () => log('🔌 WebSocket client disconnected'));
   });
 
   server.broadcastReload = () => {
@@ -252,12 +236,13 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
   server.listen(port, () => {
     log(`🚀 Server running at http://localhost:${port}`);
     log(`🌐 Open your browser and navigate to: http://localhost:${port}`);
-    
-    // Remove the open() call completely for now to avoid hanging
-    // User can manually open browser
   });
 
   return server;
 }
 
-module.exports = { compileProject, compileProjectWatch, serveProject };
+module.exports = {
+  compileProject,
+  compileProjectWatch,
+  serveProject,
+};

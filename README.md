@@ -1,4 +1,4 @@
-# ⚛️ Neutronium
+# ⚛️ Neutronium v3.0
 
 **Ultra-dense JavaScript framework – maximum performance, minimal overhead**
 
@@ -8,7 +8,14 @@
 
 ---
 
-## 🚀 About
+## 🎉 What's new?
+- ⚡ Faster compilation for complex projects
+- ✨ useState, and useEffect
+- ⚛️ React like syntax for easier switching
+
+---
+
+## ℹ️ About
 
 **Neutronium** is a lightweight, efficient JavaScript framework designed for building modern web applications with **React-like simplicity** but **minimal overhead**.
 
@@ -33,11 +40,15 @@
 npm i neutronium@latest -g
 ```
 
+---
+
 ## 🛠️ Setup
 
 ```
 neu-cli create-app my-app
 ```
+
+---
 
 ## Usage Example
 ```jsx
@@ -63,7 +74,12 @@ createApp(App).mount('body');
 ## Result:
 ![Results](https://raw.githubusercontent.com/PFMCODES/neutronium/main/results.png)
 
-## Other helpful packages you might need
+---
+
+## NPM Packages using Neutronium
 ### [@neuhq/alert](https://www.npmjs.com/package/@neuhq/alert)
-## ⚒️ In dev
-### [@neuhq/router](https://www.npmjs.com/package/@neuhq/router) 
+
+---
+
+## Found a bug or a problem?
+### Report [here.](https://github.com/PFMCODES/neutronium/issues/new)

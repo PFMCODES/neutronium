@@ -1,58 +1,71 @@
-// @types/netronium/index.d.ts
+// src/index.ts
 
-type StateUpdater<T> = (newValue: T) => void;
-type Component<T = any> = (props?: T) => HTMLElement | DocumentFragment;
+type EffectFn = () => void;
+type Setter<T> = (value: T) => void;
+type Getter<T> = () => T;
+type StateTuple<T> = [Getter<T>, Setter<T>];
 
-let globalState: any[] = [];
+let globalState: Array<StateTuple<any>> = [];
 let stateIndex = 0;
 
-// Reset index before each render
-export function resetStateIndex(): void {
+function resetStateIndex(): void {
   stateIndex = 0;
 }
 
-// Custom useState
-export function useState<T>(initialValue: T): [T, StateUpdater<T>] {
-  const currentIndex = stateIndex;
+let currentEffect: EffectFn | null = null;
 
-  if (globalState[currentIndex] === undefined) {
-    globalState[currentIndex] = initialValue;
-  }
-
-  function setState(newValue: T): void {
-    globalState[currentIndex] = newValue;
-
-    // Re-render
-    const root = window.__NEUTRONIUM_ROOT__ as HTMLElement | null;
-    const renderFn = window.__NEUTRONIUM_RENDER_FN__ as (() => Node) | null;
-
-    if (root && typeof renderFn === 'function') {
-      root.innerHTML = '';
-      resetStateIndex();
-      const newVNode = renderFn();
-      root.appendChild(newVNode);
-    }
-  }
-
-  stateIndex++;
-  return [globalState[currentIndex], setState];
+function useEffect(fn: EffectFn): void {
+  currentEffect = fn;
+  fn(); // run once to collect dependencies
+  currentEffect = null;
 }
 
-// JSX-compatible hyperscript function
-export function h(
-  type: string | Component,
-  props: { [key: string]: any } = {},
-  ...children: any[]
-): HTMLElement | DocumentFragment {
+function useState<T>(initialValue: T): StateTuple<T> {
+  const index = stateIndex;
+
+  if (!globalState[index]) {
+    let value = initialValue;
+    const subs = new Set<EffectFn>();
+
+    const get: Getter<T> = () => {
+      if (currentEffect) subs.add(currentEffect);
+      return value;
+    };
+
+    const set: Setter<T> = (newVal: T) => {
+      if (value !== newVal) {
+        value = newVal;
+        subs.forEach(fn => fn()); // re-run effects
+        if (typeof (window as any).__NEUTRONIUM_RENDER_FN__ === 'function') {
+          (window as any).__NEUTRONIUM_RENDER_FN__();
+        }
+      }
+    };
+
+    globalState[index] = [get, set];
+  }
+
+  const result = globalState[index] as StateTuple<T>;
+  stateIndex++;
+  return result;
+}
+
+type Props = {
+  [key: string]: any;
+  children?: any;
+};
+
+function h(type: string | ((props: Props) => Node), props: Props = {}, ...children: any[]): Node {
+  props.children = (props.children || []).concat(children).flat();
+
   if (typeof type === 'function') {
-    props = props || {};
-    props.children = children.flat();
     return type(props);
   }
 
   const el = document.createElement(type);
 
   for (const [key, value] of Object.entries(props)) {
+    if (key === 'children') continue;
     if (key.startsWith('on') && typeof value === 'function') {
       el.addEventListener(key.slice(2).toLowerCase(), value);
     } else if (key === 'ref' && typeof value === 'function') {
@@ -62,56 +75,68 @@ export function h(
     }
   }
 
-  children.flat().forEach(child => {
+  for (const child of props.children) {
     if (typeof child === 'string' || typeof child === 'number') {
-      el.appendChild(document.createTextNode(child));
+      el.appendChild(document.createTextNode(String(child)));
     } else if (child instanceof Node) {
       el.appendChild(child);
     }
-  });
+  }
 
   return el;
 }
 
-// Mount app to DOM
-export function createApp(component: () => Node) {
+function createApp(component: () => Node) {
   return {
-    mount(selector: string | HTMLElement): Node | null {
-      const root =
-        typeof selector === 'string'
-          ? document.querySelector(selector)
-          : selector;
+    mount(selector: string | Element): Element | null {
+      const root = typeof selector === 'string'
+        ? document.querySelector(selector)
+        : selector;
 
       if (!root) {
         console.error(`❌ Root element '${selector}' not found`);
         return null;
       }
 
-      window.__NEUTRONIUM_ROOT__ = root;
-      window.__NEUTRONIUM_RENDER_FN__ = component;
+      (window as any).__NEUTRONIUM_ROOT__ = root;
 
-      resetStateIndex();
-      const vnode = component();
-      root.innerHTML = '';
-      root.appendChild(vnode);
+      function render() {
+        resetStateIndex();
+        const vnode = component();
+        root.innerHTML = '';
+        root.appendChild(vnode);
+      }
 
-      return vnode;
+      (window as any).__NEUTRONIUM_RENDER_FN__ = render;
+      render();
+
+      return root;
     }
   };
 }
 
-// Fragment support
-export function Fragment(props: { children?: any[] }): DocumentFragment {
+function Fragment(props: Props = {}): DocumentFragment {
   const frag = document.createDocumentFragment();
-  const children = props.children ?? [];
+  const children = props.children || [];
 
-  (Array.isArray(children) ? children : [children]).forEach(child => {
+  const childArray = Array.isArray(children) ? children : [children];
+
+  for (const child of childArray) {
     if (typeof child === 'string' || typeof child === 'number') {
-      frag.appendChild(document.createTextNode(child));
+      frag.appendChild(document.createTextNode(String(child)));
     } else if (child instanceof Node) {
       frag.appendChild(child);
     }
-  });
+  }
 
   return frag;
 }
+
+export {
+  h,
+  createApp,
+  Fragment,
+  useState,
+  useEffect,
+  resetStateIndex
+};
