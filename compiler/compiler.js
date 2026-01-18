@@ -12,7 +12,7 @@ const { execSync } = require('child_process');
 
 async function compileProject(projectDir = process.cwd()) {
   const distDir = path.join(projectDir, 'dist');
-  const neutroniumPath = path.join(projectDir, 'node_modules', 'neutronium', 'src', 'index.js');
+  const neutroniumPath = 'neutronium.js';
   const packageJson = JSON.parse(fs.readFileSync(path.join(projectDir, 'package.json')));
   const entry = packageJson.main || 'App.js';
 
@@ -68,11 +68,11 @@ async function compileProject(projectDir = process.cwd()) {
 
       // Ensure _neutronium is imported
       if (!source.includes('_neutronium')) {
-        code = `import * as _neutronium from '${neutroniumPath.replace(/\\/g, '/')}';\n\n${code}`;
+        code = `import * as _neutronium from './${neutroniumPath.replace(/\\/g, '/')}';\n\n${code}`;
       }
 
       // Replace imports to "neutronium" with local path
-      code = code.replace(/from\s+['"]neutronium['"]/g, `from '${neutroniumPath.replace(/\\/g, '/')}'`);
+      code = code.replace(/from\s+['"]neutronium['"]/g, `from './${neutroniumPath.replace(/\\/g, '/')}'`);
 
       writeFile(outputPath, code);
     }
@@ -81,7 +81,7 @@ async function compileProject(projectDir = process.cwd()) {
     const htmlContent = baseHtml(`
       <script defer type="module" src="./${entry}"></script>
     `);
-
+    writeFile(path.join(distDir, neutroniumPath), fs.readFileSync(path.join(projectDir, 'node_modules', 'neutronium', 'src', 'index.js'), 'utf-8'))
     writeFile(path.join(distDir, 'index.html'), htmlContent);
 
     log('✅ Compilation complete!');
@@ -178,9 +178,11 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
 function serveProject(projectDir = process.cwd(), port = 3000) {
   const server = http.createServer((req, res) => {
     let reqPath = req.url;
-
     if (reqPath === '/' || reqPath === '/index.html') {
       reqPath = '/dist/index.html';
+    }
+    else if (!reqPath.startsWith('/dist/')) {
+      reqPath = '/dist' + reqPath;
     }
 
     if (reqPath === '/favicon.ico') {
@@ -194,7 +196,10 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
       res.writeHead(403);
       return res.end('403 Forbidden');
     }
-
+    if (!filePath.startsWith(path.join(projectDir, 'dist'))) {
+      res.writeHead(403);
+      return res.end('403 Forbidden');
+    }
     if (!fs.existsSync(filePath)) {
       res.writeHead(404);
       return res.end('404 Not Found');
@@ -234,7 +239,6 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
   };
 
   server.listen(port, () => {
-    log(`🚀 Server running at http://localhost:${port}`);
     log(`🌐 Open your browser and navigate to: http://localhost:${port}`);
   });
 
