@@ -180,9 +180,9 @@ async function init() {
   if (!fs.existsSync(distPath)) fs.mkdirSync(distPath);
   fs.writeFileSync(path.join(distPath, 'index.html'), htmlTemplate(appName, compiledCode));
 
-  const folderCmd = createdFolder ? `cd ${path.basename(targetPath)}` : '';
+  const folderCmd = createdFolder ? `   cd ${path.basename(targetPath)} \n` : '';
   console.log('\n✅ Neutronium app is ready!');
-  console.log(`➡️  Run the following to get started:\n\n   ${folderCmd}\n   npm start\n`);
+  console.log(`➡️  Run the following to get started:\n\n${folderCmd}   npm start\nto apply favicon:\n   neu-cli apply-favicon [favicon path]\n`);
 }
 
 // --- CLI Command Routing ---
@@ -242,7 +242,63 @@ switch (command) {
 
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
     break;
-
+  case 'install':
+  if (!args[0]) {
+    console.log('❌ Please specify a package to install');
+    break;
+  }
+  
+  const distDir = path.join(process.cwd(), 'dist');
+  
+  if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir);
+  }
+  
+  try {
+    execSync(`cd dist && npm install ${args[0]}`, { stdio: 'inherit' });
+    
+    // Delete package.json and package-lock.json if they exist
+    const pkgJsonPath = path.join(distDir, 'package.json');
+    const pkgLockPath = path.join(distDir, 'package-lock.json');
+    
+    if (fs.existsSync(pkgJsonPath)) {
+      fs.unlinkSync(pkgJsonPath);
+      console.log('🗑️  Removed dist/package.json');
+    }
+    
+    if (fs.existsSync(pkgLockPath)) {
+      fs.unlinkSync(pkgLockPath);
+      console.log('🗑️  Removed dist/package-lock.json');
+    }
+    
+    console.log(`✅ Installed ${args[0]} in dist/node_modules`);
+  } catch (err) {
+    console.error('❌ Installation failed:', err.message);
+  }
+  break;
+  case "apply-favicon":
+    if (!args[0]) {
+      console.error('❌ Please provide a URL for favicon');
+      console.log('Usage: neu-cli apply-favicon <url>');
+    }
+    else {
+      try {
+        const faviconUrl = args[0];
+        const pkgPath = path.join(process.cwd(), 'package.json');
+        const packageJSON = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+        
+        packageJSON.favicon = faviconUrl;
+        
+        // Save it back to the file
+        fs.writeFileSync(pkgPath, JSON.stringify(packageJSON, null, 2));
+        
+        console.log(`✅ Favicon set to: ${faviconUrl}`);
+        console.log('💡 Run "npm start" to see changes');
+      } catch (err) {
+        console.error('❌ Error setting favicon:', err.message);
+      }
+    }
+    break;
   default:
     console.log('❌ Unknown command.');
     console.log(`

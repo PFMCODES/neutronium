@@ -97,21 +97,19 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
   compileProject(projectDir);
 
   log('👀 Watching project for changes...');
+  log(`Watching directory: ${projectDir}`);
   log('✋ Press Ctrl+C to stop the development server');
 
   let timeout;
 
-  const watcher = chokidar.watch([
-    path.join(projectDir, '**/*.js'),
-    path.join(projectDir, '**/*.ts'),
-    path.join(projectDir, '**/*.tsx'),
-  ], {
+  const watcher = chokidar.watch(projectDir, {
     ignoreInitial: true,
     ignored: [
+      /(^|[\/\\])\../,  // dot files
       '**/node_modules/**',
-      '**/dist/**',
+      '**/dist/**',           // ← THIS IS CRITICAL
       '**/.git/**',
-      'compiler.js'
+      '**/compiler.js'
     ],
     persistent: true,
     followSymlinks: false,
@@ -123,11 +121,33 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
   });
 
   watcher.on('ready', () => {
+    const watched = watcher.getWatched();
     log('📡 File watcher ready and monitoring changes...');
+    log(`Watching ${Object.keys(watched).length} directories`);
   });
 
+  // REMOVE the 'all' event listener - it's just for debugging
+  // watcher.on('all', (event, filePath) => {
+  //   log(`📊 Event: ${event} - ${path.relative(projectDir, filePath)}`);
+  // });
+
   watcher.on('change', filePath => {
-    if (!/\.(js|ts|tsx)$/.test(filePath)) return;
+    // Extra safety check: ignore dist folder
+    if (filePath.includes(path.sep + 'dist' + path.sep) || filePath.includes('/dist/')) {
+      return;
+    }
+    if (filePath.includes(path.sep + 'node_modules' + path.sep) || filePath.includes('/node_modules/')) {
+      return;
+    }
+    if (filePath.includes(path.sep + '.git' + path.sep) || filePath.includes('/.git/')) {
+      return;
+    }
+    if (filePath.includes(path.sep + 'compiler.js') || filePath.includes('/compiler.js')) {
+      return;
+    }
+    if (!/\.(js|ts|tsx)$/.test(filePath)) {
+      return;
+    }
 
     log(`🔍 Detected change in: ${path.relative(projectDir, filePath)}`);
 
@@ -136,8 +156,8 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
       log('🔨 Rebuilding project...');
       try {
         const success = compileProject(projectDir);
-        if (success && server.broadcastReload) {
-          server.broadcastReload();
+        if (success && server) {
+          server();
           log('🔄 Browser reload triggered');
         }
       } catch (err) {
@@ -147,12 +167,18 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
   });
 
   watcher.on('add', filePath => {
+    if (filePath.includes(path.sep + 'dist' + path.sep) || filePath.includes('/dist/')) {
+      return;
+    }
     if (/\.(js|ts|tsx)$/.test(filePath)) {
       log(`📝 New file added: ${path.relative(projectDir, filePath)}`);
     }
   });
 
   watcher.on('unlink', filePath => {
+    if (filePath.includes(path.sep + 'dist' + path.sep) || filePath.includes('/dist/')) {
+      return;
+    }
     if (/\.(js|ts|tsx)$/.test(filePath)) {
       log(`🗑️ File removed: ${path.relative(projectDir, filePath)}`);
     }
@@ -227,10 +253,9 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
 
   wss.on('connection', (ws) => {
     log('🔌 WebSocket client connected');
-    ws.on('close', () => log('🔌 WebSocket client disconnected'));
   });
 
-  server.broadcastReload = () => {
+  let broadcastReload = () => {
     wss.clients.forEach(client => {
       if (client.readyState === WebSocket.OPEN) {
         client.send('reload');
@@ -242,7 +267,8 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
     log(`🌐 Open your browser and navigate to: http://localhost:${port}`);
   });
 
-  return server;
+  return broadcastReload;
+
 }
 
 module.exports = {
