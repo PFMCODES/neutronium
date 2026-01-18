@@ -1,6 +1,6 @@
 {
   "name": "neutronium",
-  "version": "3.0.0",
+  "version": "3.2.6",
   "description": "Ultra-dense JavaScript framework – maximum performance, minimal overhead",
   "main": "src/index.js",
   "type": "commonjs",
@@ -10,7 +10,7 @@
     ".": "./src/index.js"
   },
   "bin": {
-    "neu-cli": "./cli/index.js"
+    "neu-cli": "cli/index.js"
   },
   "keywords": [
     "framework",
@@ -32,9 +32,10 @@
   "license": "MIT",
   "dependencies": {
     "@babel/core": "^7.28.0",
-    "@babel/plugin-transform-react-jsx": "^7.27.1",
+    "@babel/plugin-transform-react-jsx": "^7.28.6",
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-react": "^7.27.1",
+    "@babel/standalone": "^7.28.6",
     "chokidar": "^4.0.3",
     "inquirer": "^12.7.0",
     "mime": "^4.0.7",

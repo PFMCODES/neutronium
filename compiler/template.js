@@ -1,4 +1,4 @@
-function baseHtml(appHtml, scriptName) {
+function baseHtml(script) {
   return `
 <!DOCTYPE html>
 <html>
@@ -7,8 +7,7 @@ function baseHtml(appHtml, scriptName) {
   <title>Neutronium App</title>
 </head>
 <body>
-  ${appHtml}
-  <script type="module" src="./${scriptName}"></script>
+  ${script}
   <script>
     const ws = new WebSocket('ws://' + location.host);
     ws.onmessage = (msg) => {
@@ -19,6 +18,23 @@ function baseHtml(appHtml, scriptName) {
     };
   </script>
 </body>
+</html>
+`.trim();
+}
+
+export function basehtml(script) {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Neutronium App</title>
+</head>
+<body>
+  <script>
+    ${script}
+  </script>
+  </body>
 </html>
 `.trim();
 }

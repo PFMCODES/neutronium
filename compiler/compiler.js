@@ -80,7 +80,7 @@ async function compileProject(projectDir = process.cwd()) {
     log('🛠️ Generating index.html...');
     const htmlContent = baseHtml(`
       <script defer type="module" src="./${entry}"></script>
-    `, entry);
+    `);
 
     writeFile(path.join(distDir, 'index.html'), htmlContent);
 
@@ -244,5 +244,5 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
 module.exports = {
   compileProject,
   compileProjectWatch,
-  serveProject,
+  serveProject
 };
