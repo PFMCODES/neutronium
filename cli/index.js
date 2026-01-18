@@ -255,7 +255,7 @@ switch (command) {
   }
   
   try {
-    execSync(`cd ${distDir} && npm install ${args[0]}`, { stdio: 'inherit' });
+    execSync(`npm install ${args[0]}`, {cwd: distDir, stdio: 'inherit' });
     
     // Delete package.json and package-lock.json if they exist
     const pkgJsonPath = path.join(distDir, 'package.json');
