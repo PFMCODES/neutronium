@@ -203,7 +203,7 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
       reqPath = reqPath.replace('/node_modules', '');
       reqPath = "/node_modules/" + reqPath;
     }
-    else if (!reqPath.startsWith('/dist/')) {
+    else if (!reqPath.startsWith('/dist/') && !reqPath.startsWith('node_modules')) {
       reqPath = '/dist' + reqPath;
     }
 
