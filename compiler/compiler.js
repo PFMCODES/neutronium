@@ -71,57 +71,6 @@ async function compileProject(projectDir = process.cwd()) {
         code = `import * as _neutronium from './${neutroniumPath.replace(/\\/g, '/')}';\n\n${code}`;
       }
 
-      // Check if code uses node_modules (detect imports that aren't relative)
-      const nodeModuleImportRegex = /from\s+['"]((?!\.\/|\.\.\/|neutronium)[^'"]+)['"]/g;
-      const matches = [...code.matchAll(nodeModuleImportRegex)];
-      
-      if (matches.length > 0) {
-        log(`📦 Detected node_modules imports in ${file}`);
-        
-        // Copy node_modules to dist if it exists
-        const srcNodeModules = path.join(projectDir, 'node_modules');
-        const distNodeModules = path.join(distDir, 'node_modules');
-        
-        if (fs.existsSync(srcNodeModules)) {
-          if (!fs.existsSync(distNodeModules)) {
-            log('📂 Copying node_modules to dist...');
-            
-            // Create a symlink instead of copying (faster)
-            try {
-              fs.symlinkSync(srcNodeModules, distNodeModules, 'junction');
-              log('🔗 Created symlink to node_modules');
-            } catch (err) {
-              // If symlink fails, fall back to copying specific packages
-              log('📋 Symlinking failed, copying required packages...');
-              ensureDir(distNodeModules);
-              
-              // Copy only the packages that are actually imported
-              const packagesToCopy = new Set();
-              matches.forEach(match => {
-                const packageName = match[1].split('/')[0];
-                if (packageName.startsWith('@')) {
-                  // Scoped package like @babel/core
-                  packagesToCopy.add(match[1].split('/').slice(0, 2).join('/'));
-                } else {
-                  packagesToCopy.add(packageName);
-                }
-              });
-              
-              packagesToCopy.forEach(pkg => {
-                const srcPkg = path.join(srcNodeModules, pkg);
-                const distPkg = path.join(distNodeModules, pkg);
-                if (fs.existsSync(srcPkg)) {
-                  copyRecursiveSync(srcPkg, distPkg);
-                  log(`  ✓ Copied ${pkg}`);
-                }
-              });
-            }
-          }
-        } else {
-          log('⚠️  Warning: node_modules not found, imports may fail');
-        }
-      }
-
       // Replace imports to "neutronium" with local path
       code = code.replace(/from\s+['"]neutronium['"]/g, `from './${neutroniumPath.replace(/\\/g, '/')}'`);
 
@@ -187,9 +136,6 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
     if (filePath.includes(path.sep + 'dist' + path.sep) || filePath.includes('/dist/')) {
       return;
     }
-    if (filePath.includes(path.sep + 'node_modules' + path.sep) || filePath.includes('/node_modules/')) {
-      return;
-    }
     if (filePath.includes(path.sep + '.git' + path.sep) || filePath.includes('/.git/')) {
       return;
     }
@@ -218,18 +164,12 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
   });
 
   watcher.on('add', filePath => {
-    if (filePath.includes(path.sep + 'dist' + path.sep) || filePath.includes('/dist/') || filePath.includes(path.sep + 'node_modules' + path.sep) || filePath.includes("node_modules")) {
-      return;
-    }
     if (/\.(js|ts|tsx)$/.test(filePath)) {
       log(`📝 New file added: ${path.relative(projectDir, filePath)}`);
     }
   });
 
   watcher.on('unlink', filePath => {
-    if (filePath.includes(path.sep + 'dist' + path.sep) || filePath.includes('/dist/')) {
-      return;
-    }
     if (/\.(js|ts|tsx)$/.test(filePath)) {
       log(`🗑️ File removed: ${path.relative(projectDir, filePath)}`);
     }
@@ -258,6 +198,10 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
     let reqPath = req.url;
     if (reqPath === '/' || reqPath === '/index.html') {
       reqPath = '/dist/index.html';
+    }
+    else if (reqPath.startsWith('node_modules')) {
+      reqPath = reqPath.replace('/node_modules', '');
+      reqPath = "/node_modules/" + reqPath;
     }
     else if (!reqPath.startsWith('/dist/')) {
       reqPath = '/dist' + reqPath;
@@ -342,29 +286,8 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
 
 }
 
-function copyRecursiveSync(src, dest) {
-  const exists = fs.existsSync(src);
-  const stats = exists && fs.statSync(src);
-  const isDirectory = exists && stats.isDirectory();
-  
-  if (isDirectory) {
-    if (!fs.existsSync(dest)) {
-      fs.mkdirSync(dest, { recursive: true });
-    }
-    fs.readdirSync(src).forEach(childItemName => {
-      copyRecursiveSync(
-        path.join(src, childItemName),
-        path.join(dest, childItemName)
-      );
-    });
-  } else {
-    fs.copyFileSync(src, dest);
-  }
-}
-
 module.exports = {
   compileProject,
   compileProjectWatch,
-  serveProject,
-  copyRecursiveSync
+  serveProject
 };
