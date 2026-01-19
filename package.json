@@ -1,6 +1,6 @@
 {
   "name": "neutronium",
-  "version": "3.3.4",
+  "version": "3.3.5",
   "description": "Ultra-dense JavaScript framework – maximum performance, minimal overhead",
   "main": "src/index.js",
   "type": "commonjs",
@@ -36,6 +36,7 @@
     "@babel/preset-env": "^7.28.0",
     "@babel/preset-react": "^7.27.1",
     "@babel/standalone": "^7.28.6",
+    "@pfmcodes/lexius-api": "^1.0.2",
     "chokidar": "^4.0.3",
     "inquirer": "^12.7.0",
     "mime": "^4.0.7",
