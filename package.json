@@ -1,6 +1,6 @@
 {
   "name": "neutronium",
-  "version": "3.3.7",
+  "version": "3.3.8",
   "description": "Ultra-dense JavaScript framework – maximum performance, minimal overhead",
   "main": "src/index.js",
   "type": "commonjs",
