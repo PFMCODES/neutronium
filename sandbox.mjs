@@ -1,7 +1,7 @@
 import * as Babel from "https://esm.sh/@babel/standalone@7.28.6/es2022/standalone.mjs";
 import { basehtml } from "./template.js";
 
-export function compileAndReturnOutput(source) {
+export function compile(source) {
   try {
     console.log("⚙️ Babel transforming");
 

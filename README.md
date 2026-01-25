@@ -1,65 +1,75 @@
-# ⚛️ Neutronium v3.3.8
+# ⚛️ Neutronium v3.4.0
 
 **Ultra-dense JavaScript framework – maximum performance, minimal overhead**
 
-[![npm](https://img.shields.io/badge/Downloads-3.2k-CB3837?logo=npm&logoColor=CB3837&style=flat-square)](https://www.npmjs.com/package/neutronium)
-[![License: MIT](https://img.shields.io/npm/l/neutronium?style=flat-square)](https://opensource.org/licenses/MIT)
+[![npm](https://img.shields.io/npm/dw/neutronium?style=flat-square&logo=npm)](https://www.npmjs.com/package/neutronium)
 [![Version](https://img.shields.io/npm/v/neutronium?style=flat-square)](https://www.npmjs.com/package/neutronium)
-[![Website](https://img.shields.io/badge/Neutronium_Website-online-0bff03?logo=GoogleChrome&logoColor=d4d2d2&style=flat-square)](https://neutronium-website.onrender.com)
-[![Playground](https://img.shields.io/badge/Online_Playground-0368ff?logo=stackblitz&style=flat-square)](https://neutronium-website.onrender.com/Playground/)
-[![Documentation](https://img.shields.io/badge/Documentation-3d3c3b?logo=readthedocs&style=flat-square)](https://neutronium-website.onrender.com/Docuemntation/)
+[![License](https://img.shields.io/npm/l/neutronium?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Website](https://img.shields.io/badge/Website-Online-0bff03?logo=googlechrome&style=flat-square&logoColor=d4d2d2)](https://neutronium-website.onrender.com)
+[![Playground](https://img.shields.io/badge/Playground-Online-0368ff?logo=stackblitz&style=flat-square)](https://neutronium-website.onrender.com/Playground/)
+[![Documentation](https://img.shields.io/badge/Documentation-3d3c3b?logo=readthedocs&style=flat-square)](https://neutronium-website.onrender.com/Documentation/)
+
 ---
 
-## 🎉 What's new?
-- ⚡ Faster compilation for complex projects
-- ✨ useState, and useEffect
-- ⚛️ React like syntax for easier switching
-- 🌐 browser-safe Neutronium code compilation using /sandbox.mjs
-- 🖼️ Apply favicon to your site
+## 🎉 What’s new in v3.4.0
+
+- ⚡ Faster compilation for complex projects  
+- ✨ `useState` and `useEffect` hooks  
+- ⚛️ React-like JSX syntax for easier switching  
+- 🌐 **Browser-safe compilation** via `/sandbox.mjs`  
+- 🖼️ Apply favicon programmatically  
+- 📦 Massive package size reduction using `.npmignore`
+
 ---
 
 ## ℹ️ About
 
-**Neutronium** is a lightweight, efficient JavaScript framework designed for building modern web applications with **React-like simplicity** but **minimal overhead**.
+**Neutronium** is a lightweight, high-performance JavaScript framework built for developers who want **explicit control**, **predictable behavior**, and **zero unnecessary abstractions**.
 
-> Ultra-fast ⚡️. Tiny footprint 📦. No build tools 🛠️. Pure JavaScript ✨.
+It offers **React-like ergonomics** without a virtual DOM, build step, or heavy runtime.
+
+> Ultra-fast ⚡ · Tiny footprint 📦 · No build tools 🛠️ · Pure JavaScript ✨
 
 ---
 
 ## ✨ Features
 
-- ⚡️ **Blazing fast rendering**
-- 🧠 **Simple component logic**
-- 🔌 **No dependencies or virtual DOM**
-- 📦 **Small size (~184kB unpacked)**
-- 🛠️ **Works out of the box**
-- 🔁 **Easy JSX-style structure**
+- ⚡ **Blazing fast rendering**
+- 🧠 **Simple, predictable component logic**
+- 🔌 **No dependencies and no virtual DOM**
+- 📦 **Tiny footprint (~57.7 kB unpacked)**
+- 🧩 **TypeScript types (~4.35 kB)**
+- 🛠️ **Works directly in the browser**
+- 🔁 **JSX-style component structure**
+- 🌐 **Sandboxed browser compiler**
 
 ---
 
 ## 📦 Installation
 
+Install the Neutronium runtime:
+
 ```bash
-npm i neutronium@latest -g
+npm install neutronium
 ```
-
+Install the CLI globally(optional, recommended):
+```bash
+npm install neutronium -g
+```
 ---
-
-## 🛠️ Setup
-
-```
+## 🛠️ Create a Project
+```bash
 neu-cli create-app my-app
+cd my-app
 ```
-
 ---
-
-## Usage Example
+## 🚀 Usage Example
 ```jsx
 // App.js
-import { createApp } from 'neutronium' // or ts-neutronium for ts devs
+import { createApp } from 'neutronium' // or ts-neutronium for TypeScript
 
-function Greeting(props) {
-  return <h2>Hello, {props.name}!</h2>;
+function Greeting({ name }) {
+  return <h2>Hello, {name}!</h2>;
 }
 
 export default function App() {
@@ -74,16 +84,41 @@ export default function App() {
 createApp(App).mount('body');
 ```
 
-## Result:
-![Results](https://raw.githubusercontent.com/PFMCODES/neutronium/main/results.png)
+---
+
+## 🧪 Result
+![Result](https://raw.githubusercontent.com/PFMCODES/neutronium/main/results.png)
+
+## Browser Sandbox
+Neutronium provides a **browser-safe compiler** for live environments such as playgrounds:
+```javascript
+import { compile } from "neutronium/sandbox.mjs";
+
+const result = compile(code);
+```
+This allows Neutronium code to be compiled without Node.js, making it ideal for online editors and sandboxes.
 
 ---
 
-## NPM Packages using Neutronium
-### [@neuhq/alert](https://www.npmjs.com/package/@neuhq/alert)
-### [neutronium-alert](https://npmjs.org/package/neutronium-alert)
+## 📚 Documentation & Links
+- 🌐 Website: https://neutronium-website.onrender.com/
+- 📖 Docs: https://neutronium-website.onrender.com/Documentation/
+- 🧪 Playground: https://neutronium-website.onrender.com/Playground/
+- 🧠 GitHub: https://github.com/PFMCODES/neutronium
+- 📦 NPM: https://www.npmjs.com/package/neutronium
 
 ---
 
-## Found a bug or a problem?
-### Report [here.](https://github.com/PFMCODES/neutronium/issues/new)
+## 📦 Packages Built with Neutronium
+- [@neuhq/alert](https://www.npmjs.com/package/@neuhq/alert)
+- [neutronium-alert](https://www.npmjs.com/package/neutronium-alert)
+
+---
+
+## 🐞 Found a Bug or Issue?
+Please report it here:
+👉 https://github.com/PFMCODES/neutronium/issues/new
+
+---
+## License
+MIT © PFMCODES
