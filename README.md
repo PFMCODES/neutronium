@@ -1,4 +1,4 @@
-# ⚛️ Neutronium v3.0
+# ⚛️ Neutronium v3.3.8
 
 **Ultra-dense JavaScript framework – maximum performance, minimal overhead**
 
@@ -12,7 +12,8 @@
 - ⚡ Faster compilation for complex projects
 - ✨ useState, and useEffect
 - ⚛️ React like syntax for easier switching
-
+- browser-safe Neutronium code compilation using /sandbox.mjs
+- Apply favicon to your site
 ---
 
 ## ℹ️ About
@@ -78,6 +79,7 @@ createApp(App).mount('body');
 
 ## NPM Packages using Neutronium
 ### [@neuhq/alert](https://www.npmjs.com/package/@neuhq/alert)
+### [neutronium-alert](https://npmjs.org/package/neutronium-alert)
 
 ---
 
