@@ -1,17 +1,17 @@
-# ⚛️ Neutronium v3.4.0
+# ⚛️ Neutronium v3.4.1
 
 **Ultra-dense JavaScript framework – maximum performance, minimal overhead**
 
 [![npm](https://img.shields.io/npm/dw/neutronium?style=flat-square&logo=npm)](https://www.npmjs.com/package/neutronium)
 [![Version](https://img.shields.io/npm/v/neutronium?style=flat-square)](https://www.npmjs.com/package/neutronium)
 [![License](https://img.shields.io/npm/l/neutronium?style=flat-square)](https://opensource.org/licenses/MIT)
-[![Website](https://img.shields.io/badge/Website-Online-0bff03?logo=googlechrome&style=flat-square&logoColor=d4d2d2)](https://neutronium-website.onrender.com)
-[![Playground](https://img.shields.io/badge/Playground-Online-0368ff?logo=stackblitz&style=flat-square)](https://neutronium-website.onrender.com/Playground/)
+[![Website](https://neutronium-website.onrender.com/browser.svg)](https://neutronium-website.onrender.com)
+[![Playground](https://neutronium-website.onrender.com/playground.svg)](https://neutronium-website.onrender.com/Playground/)
 [![Documentation](https://img.shields.io/badge/Documentation-3d3c3b?logo=readthedocs&style=flat-square)](https://neutronium-website.onrender.com/Documentation/)
 
 ---
 
-## 🎉 What’s new in v3.4.0
+## 🎉 What’s new in v3.4.1
 
 - ⚡ Faster compilation for complex projects  
 - ✨ `useState` and `useEffect` hooks  
