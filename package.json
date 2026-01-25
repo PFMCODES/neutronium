@@ -31,16 +31,11 @@
   "homepage": "https://github.com/pfmcodes/neutronium#readme",
   "license": "MIT",
   "dependencies": {
-    "@babel/core": "^7.28.0",
+    "@babel/core": "^7.28.6",
     "@babel/plugin-transform-react-jsx": "^7.28.6",
-    "@babel/preset-env": "^7.28.0",
-    "@babel/preset-react": "^7.27.1",
-    "@babel/standalone": "^7.28.6",
-    "@pfmcodes/lexius-api": "^1.0.2",
     "chokidar": "^4.0.3",
     "inquirer": "^12.7.0",
     "mime": "^4.0.7",
-    "open": "^10.2.0",
     "ws": "^8.18.3"
   }
 }

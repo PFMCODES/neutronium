@@ -16,7 +16,7 @@ export function compileAndReturnOutput(source) {
       ]]
     });
 
-    const CDN = "https://esm.sh/neutronium@3.1.8/es2022/neutronium.mjs";
+    const CDN = "https://esm.sh/neutronium@3.3.8/es2022/neutronium.mjs";
     let compiledCode = result.code
     // import { x } from "neutronium"
     .replace(

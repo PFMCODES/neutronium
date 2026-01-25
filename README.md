@@ -2,18 +2,20 @@
 
 **Ultra-dense JavaScript framework – maximum performance, minimal overhead**
 
-[![NPM Downloads](https://img.shields.io/npm/dw/neutronium?style=flat-square)](https://www.npmjs.com/package/neutronium)
+[![npm](https://img.shields.io/badge/Downloads-3.2k-CB3837?logo=npm&logoColor=CB3837&style=flat-square)](https://www.npmjs.com/package/neutronium)
 [![License: MIT](https://img.shields.io/npm/l/neutronium?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Version](https://img.shields.io/npm/v/neutronium?style=flat-square)](https://www.npmjs.com/package/neutronium)
-
+[![Website](https://img.shields.io/badge/Neutronium_Website-online-0bff03?logo=GoogleChrome&logoColor=d4d2d2&style=flat-square)](https://neutronium-website.onrender.com)
+[![Playground](https://img.shields.io/badge/Online_Playground-0368ff?logo=stackblitz&style=flat-square)](https://neutronium-website.onrender.com/Playground/)
+[![Documentation](https://img.shields.io/badge/Documentation-3d3c3b?logo=readthedocs&style=flat-square)](https://neutronium-website.onrender.com/Docuemntation/)
 ---
 
 ## 🎉 What's new?
 - ⚡ Faster compilation for complex projects
 - ✨ useState, and useEffect
 - ⚛️ React like syntax for easier switching
-- browser-safe Neutronium code compilation using /sandbox.mjs
-- Apply favicon to your site
+- 🌐 browser-safe Neutronium code compilation using /sandbox.mjs
+- 🖼️ Apply favicon to your site
 ---
 
 ## ℹ️ About
@@ -29,7 +31,7 @@
 - ⚡️ **Blazing fast rendering**
 - 🧠 **Simple component logic**
 - 🔌 **No dependencies or virtual DOM**
-- 📦 **Small size (~139kB unpacked)**
+- 📦 **Small size (~184kB unpacked)**
 - 🛠️ **Works out of the box**
 - 🔁 **Easy JSX-style structure**
 

@@ -7,7 +7,6 @@ const chokidar = require('chokidar');
 const http = require('http');
 const { default: Mime } = require('mime');
 const WebSocket = require('ws');
-const { default: open } = require('open');
 const { execSync } = require('child_process');
 
 async function compileProject(projectDir = process.cwd()) {
