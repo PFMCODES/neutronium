@@ -6,6 +6,7 @@ const path = require('path');
 const { execSync, exec } = require('child_process');
 const { transformSync } = require('@babel/core');
 const { compileProject, compileProjectWatch } = require('../compiler/compiler');
+const { zip } = require("zip-a-folder");
 
 const [, , command, ...args] = process.argv;
 
@@ -182,7 +183,7 @@ async function init() {
 
   const folderCmd = createdFolder ? `   cd ${path.basename(targetPath)} \n` : '';
   console.log('\n✅ Neutronium app is ready!');
-  console.log(`➡️  Run the following to get started:\n\n${folderCmd}   npm start\nto apply favicon:\n   neu-cli apply-favicon [favicon path]\n`);
+  console.log(`➡️  Run the following to get started:\n\n${folderCmd}   npm start\nto apply favicon:\n   neu-cli apply-favicon [favicon path]\nto export the project:\n  neu-cli [export/ship]`);
 }
 
 // --- CLI Command Routing ---
@@ -265,6 +266,24 @@ switch (command) {
       }
     }
     break;
+    case "export":
+    case "ship":
+      if (fs.existsSync(path.join(process.cwd(), 'dist'))) {
+          try {
+            (async () => {
+              if (!path.join(process.cwd(), 'build')) {
+                fs.mkdir(path.join(process,cwd(), 'build'));
+              }
+              await zip(path.join(process.cwd(), 'dist'), path.join(process.cwd(), 'build'));
+              console.log('✅ code exported successfully')
+            })
+          } catch (err) {
+            throw new err;
+          }
+      } else {
+        throw new Error("couldn't find folder 'dist'");
+      }
+      break;
   default:
     console.log('❌ Unknown command.');
     console.log(`

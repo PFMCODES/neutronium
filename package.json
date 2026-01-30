@@ -1,13 +1,17 @@
 {
   "name": "neutronium",
-  "version": "3.4.1",
+  "version": "3.4.3",
   "description": "Ultra-dense JavaScript framework – maximum performance, minimal overhead",
   "main": "src/index.js",
   "type": "commonjs",
   "types": "./ts-neutronium/index.d.ts",
   "scripts": {},
   "exports": {
-    ".": "./src/index.js"
+    ".": {
+      "require": "./src/index.js",
+      "sandbox": "./sandbox.mjs",
+      "compiler": "./compiler/compiler.js"
+    }
   },
   "bin": {
     "neu-cli": "cli/index.js"
@@ -36,6 +40,7 @@
     "chokidar": "^4.0.3",
     "inquirer": "^12.7.0",
     "mime": "^4.0.7",
-    "ws": "^8.18.3"
+    "ws": "^8.18.3",
+    "zip-a-folder": "^4.0.4"
   }
 }
