@@ -1,4 +1,4 @@
-# ⚛️ Neutronium v3.4.1
+# ⚛️ Neutronium v3.4.5
 
 **Ultra-dense JavaScript framework – maximum performance, minimal overhead**
 
@@ -11,7 +11,7 @@
 
 ---
 
-## 🎉 What’s new in v3.4.1
+## 🎉 What’s new in v3.4.5
 
 - ⚡ Faster compilation for complex projects  
 - ✨ `useState` and `useEffect` hooks  
