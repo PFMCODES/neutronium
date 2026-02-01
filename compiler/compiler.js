@@ -8,6 +8,7 @@ const http = require('http');
 const { default: Mime } = require('mime');
 const WebSocket = require('ws');
 const { execSync } = require('child_process');
+let isShuttingDown = false;
 
 async function compileProject(projectDir = process.cwd()) {
   const distDir = path.join(projectDir, 'dist');
@@ -92,7 +93,7 @@ async function compileProject(projectDir = process.cwd()) {
 }
 
 function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
-  const server = serveProject(projectDir, port);
+  const { server, wss, sockets } = serveProject(projectDir, port);
   compileProject(projectDir);
 
   log('👀 Watching project for changes...');
@@ -178,15 +179,61 @@ function compileProjectWatch(projectDir = process.cwd(), port = 3000) {
     console.error('❌ Watcher error:', error);
   });
 
-  const cleanup = () => {
-    log('🧹 Cleaning up...');
-    watcher.close();
-    if (server) server.close();
-    process.exit(0);
+  const cleanup = async () => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
+
+    // 🔑 Prevent Node from waiting for stdin
+    process.stdin.pause();
+
+    console.log('\n🔹 🛑 Shutting down Neutronium dev server...');
+
+    try {
+      if (watcher) {
+        await watcher.close();
+        log('👀 File watcher stopped');
+      }
+
+      if (wss) {
+        wss.clients.forEach(c => c.terminate());
+        wss.close();
+        log('🔌 WebSocket server closed');
+      }
+
+      if (sockets) {
+        sockets.forEach(s => s.destroy());
+        log('💣 HTTP sockets destroyed');
+      }
+
+      if (sockets.size) {
+        sockets.forEach(socket => socket.destroy());
+        sockets.clear();
+        log('💣 HTTP sockets destroyed');
+      }
+
+
+      if (server) {
+        server.close(() => {
+          log('🌐 HTTP server closed');
+          log("Ctrl + C once again to exit");
+          process.exit(0);
+        });
+      } else {
+        log("Ctrl + C once again");
+        process.exit(0);
+      }
+
+      // ⏱️ Safety kill (never needs second Ctrl+C)
+      setTimeout(() => process.exit(0), 200);
+    } catch (err) {
+      console.error('❌ Error during cleanup:', err);
+      process.exit(1);
+    }
   };
 
-  process.on('SIGINT', cleanup);
-  process.on('SIGTERM', cleanup);
+  process.on('SIGINT', () => cleanup());
+  process.on('SIGTERM', () => cleanup());
+  process.on('SIGHUP', () => cleanup());
 
   return { server, watcher, cleanup };
 }
@@ -263,6 +310,13 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
     }
   });
 
+  const sockets = new Set();
+
+  server.on('connection', socket => {
+    sockets.add(socket);
+    socket.on('close', () => sockets.delete(socket));
+  });
+
   const wss = new WebSocket.Server({ server });
 
   wss.on('connection', (ws) => {
@@ -276,13 +330,12 @@ function serveProject(projectDir = process.cwd(), port = 3000) {
       }
     });
   };
-
+  server.broadcastReload = broadcastReload;
   server.listen(port, () => {
     log(`🌐 Open your browser and navigate to: http://localhost:${port}`);
   });
 
-  return broadcastReload;
-
+  return { server, wss, sockets };
 }
 
 module.exports = {

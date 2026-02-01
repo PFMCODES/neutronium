@@ -8,6 +8,22 @@ const { transformSync } = require('@babel/core');
 const { compileProject, compileProjectWatch } = require('../compiler/compiler');
 const { zip } = require("zip-a-folder");
 
+const pkgPath = path.join(__dirname, "..", "package.json");
+const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+
+const currentVersion = pkg.version;
+const name = pkg.name;
+
+async function getLatestVersion(pkgName) {
+  const res = await fetch(
+    `https://registry.npmjs.org/${encodeURIComponent(pkgName)}/latest`
+  );
+
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data.version;
+}
+
 const [, , command, ...args] = process.argv;
 
 const babelRc = `{
@@ -261,6 +277,7 @@ switch (command) {
         
         console.log(`✅ Favicon set to: ${faviconUrl}`);
         console.log('💡 Run "npm start" to see changes');
+        console.log('❗ Reminder: remember to put all the resources in the dist directory')
       } catch (err) {
         console.error('❌ Error setting favicon:', err.message);
       }
@@ -274,30 +291,88 @@ switch (command) {
               if (!path.join(process.cwd(), 'build')) {
                 fs.mkdir(path.join(process,cwd(), 'build'));
               }
-              await zip(path.join(process.cwd(), 'dist'), path.join(process.cwd(), 'build'));
-              console.log('✅ code exported successfully')
-            })
+              const pkgPath = path.join(process.cwd(), 'package.json');
+              const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+              // sanitize name for filesystem
+              const safeName = pkg.name.replace(/[\/@]/g, '-');
+
+              const distDir = path.join(process.cwd(), 'dist');
+              const buildDir = path.join(process.cwd(), 'build');
+
+              if (!fs.existsSync(buildDir)) {
+                fs.mkdirSync(buildDir);
+              }
+
+              await zip(
+                distDir,
+                path.join(buildDir, `${safeName}.zip`)
+              );
+
+              console.log(`✅ Exported as build/${safeName}.zip`);
+            })();
           } catch (err) {
-            throw new err;
+            console.error(err);
           }
       } else {
         throw new Error("couldn't find folder 'dist'");
       }
       break;
+  case 'update':
+    (async () => {
+      const latest = await getLatestVersion(name);
+
+      if (!latest) {
+        console.log('⚠️ Could not check latest version');
+        return;
+      }
+
+      if (latest === currentVersion) {
+        console.log('✅ neu-cli is already up to date');
+        return;
+      }
+
+      console.log(`⬆️ Updating neu-cli ${currentVersion} → ${latest}`);
+
+      try {
+        execSync(`npm run update`, {
+          stdio: 'inherit'
+        });
+
+        console.log('✅ Update complete');
+      } catch (err) {
+        console.error('❌ Update failed');
+      }
+    })();
+    break;
   default:
-    console.log('❌ Unknown command.');
-    console.log(`
-Available Commands:
-  init | create-app | create-neutronium-app
-      👉 Initialize a new Neutronium project
+    (async () => {
+      const latest = await getLatestVersion(name);
 
-  start
-      👉 Compiles your app once
+      if (!latest) {
+        console.log(`Neutronium v${currentVersion}`);
+      } else if (latest !== currentVersion) {
+        console.log(
+          `Neutronium v${currentVersion} (update available → ${latest}, run: neu-cli update)`
+        );
+      } else {
+        console.log(`Neutronium v${currentVersion} (latest)`);
+      }
 
-  start --watch
-      👉 Start dev server and rebuild on changes
+      console.log(`
+  Available Commands:
+    init | create-app | create-neutronium-app
+        👉 Initialize a new Neutronium project
 
-  --lang js | ts
-      👉 Switch between JS and TS
-`);
+    start
+        👉 Compiles your app once
+
+    start --watch
+        👉 Start dev server and rebuild on changes
+
+    --lang js | ts
+        👉 Switch between JS and TS
+  `);
+    })();
+    break;
 }
